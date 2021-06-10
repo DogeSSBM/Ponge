@@ -54,6 +54,27 @@ Length getTextLength(const char *text)
 	return len;
 }
 
+// draws a collection of strings evenly spaced between 2 points
+void spanTextList(const Coord start, const Coord stop, const uint num, const char **textList)
+{
+	if(num == 0)
+		return;
+	const Length step = coordDiv(coordSub(stop, start), num>1?num-1:1);
+	for(uint i = 0; i < num; i++){
+		drawTextCenteredCoord(coordOffset(start, coordMul(step, i)), textList[i]);
+	}
+}
+
+void spanTextListCentered(const Coord start, const Coord stop, const uint num, const char **textList)
+{
+	if(num == 0)
+		return;
+	const Length step = coordDiv(coordSub(stop, start), num+1);
+	for(uint i = 1; i < num+1; i++){
+		drawTextCenteredCoord(coordOffset(start, coordMul(step, i)), textList[i-1]);
+	}
+}
+
 typedef struct{
 	char* text;
 	Rect r;
@@ -69,64 +90,12 @@ void setFontSize(int size)
 	if(gfx.font != NULL)
 		TTF_CloseFont(gfx.font);
 	gfx.fontSize = size;
-	gfx.font = TTF_OpenFont("./LiberationMono.ttf", gfx.fontSize);
+	gfx.font = TTF_OpenFont("./FiraCode-Medium.ttf", gfx.fontSize);
 }
 
 void setFontColor(Color c)
 {
 	gfx.fontColor = c;
-}
-
-void TB_setText(TextBox *tb, const char *text)
-{
-	size_t size = sizeof(char)*strlen(text)+1;
-	tb->text = malloc(size);
-	memset(tb->text, '\0', size);
-	memcpy(tb->text, text, size);
-}
-
-void TB_setTextSize(TextBox *tb, int size)
-{
-	tb->size = size;
-}
-
-TextBox* TB_create(uint x, uint y, const char* text)
-{
-	TextBox *tb = malloc(sizeof(TextBox));
-	TB_setText(tb, text);
-	tb->r.x = x;
-	tb->r.y = y;
-	tb->backColor = BLACK;
-	tb->textColor = GREY;
-	tb->size = 48;
-	return tb;
-}
-
-void TB_destroy(TextBox *tb)
-{
-	if(tb){
-		if(tb->text){
-			free(tb->text);
-		}
-		free(tb);
-	}
-}
-
-void TB_draw(TextBox *tb)
-{
-	setFontSize(tb->size);
-	SDL_Surface *surface = TTF_RenderText_Solid(
-		gfx.font, tb->text, tb->textColor);
-	SDL_Texture *texture = SDL_CreateTextureFromSurface(
-		gfx.renderer, surface);
-	SDL_QueryTexture(texture, NULL, NULL, &(tb->r.w), &(tb->r.h));
-	setColor(tb->backColor);
-	SDL_RenderFillRect(gfx.renderer, &(tb->r));
-	SDL_RenderCopy(gfx.renderer, texture, NULL, &(tb->r));
-	setColor(tb->textColor);
-	// SDL_RenderDrawRect(gfx.renderer, &(tb->r));
-	SDL_FreeSurface(surface);
-	SDL_DestroyTexture(texture);
 }
 
 void text_quit(void)
